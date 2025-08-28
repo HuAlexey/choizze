@@ -1,21 +1,20 @@
+// middleware/auth.js
 const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
-// Секретный ключ для подписи JWT. Он должен совпадать с тем, что в server.js
-const jwtSecret = 'ваш_супер_секретный_ключ_для_jwt';
+const verifyToken = (req, res, next) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  if (!token) {
+    return res.status(401).json({ error: 'Токен отсутствует' });
+  }
 
-const auth = (req, res, next) => {
   try {
-    const token = req.headers.authorization.split(' ')[1];
-    if (!token) {
-      return res.status(401).json({ error: 'Авторизация не пройдена, нет токена.' });
-    }
-
-    const decodedToken = jwt.verify(token, jwtSecret);
-    req.user = decodedToken;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.userId = decoded.userId;
     next();
   } catch (err) {
-    res.status(401).json({ error: 'Авторизация не пройдена, неверный токен.' });
+    res.status(401).json({ error: 'Недействительный токен' });
   }
 };
 
-module.exports = auth;
+module.exports = { verifyToken };

@@ -1,27 +1,20 @@
-const { Pool } = require('pg');
-require('dotenv').config();
+// Блок 1: Подключение к MongoDB
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 
-let pool;
+dotenv.config();
 
-if (process.env.DATABASE_URL) {
-    // Если переменная окружения DATABASE_URL существует (как на Render), используем ее
-    pool = new Pool({
-        connectionString: process.env.DATABASE_URL,
-        ssl: {
-            rejectUnauthorized: false
-        }
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
     });
-} else {
-    // В противном случае, используем локальные настройки
-    pool = new Pool({
-        user: 'postgres',
-        host: 'localhost',
-        database: 'choizze_db',
-        password: '2378',
-        port: 5432,
-    });
-}
-
-module.exports = {
-    query: (text, params) => pool.query(text, params),
+    console.log('MongoDB подключен');
+  } catch (err) {
+    console.error('Ошибка подключения к MongoDB:', err);
+    process.exit(1);
+  }
 };
+
+module.exports = connectDB;
